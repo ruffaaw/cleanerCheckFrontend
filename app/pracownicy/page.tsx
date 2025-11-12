@@ -1,131 +1,106 @@
-// "use client";
-// import { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
-  SidebarInset,
   SidebarProvider,
+  SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbItem,
   BreadcrumbPage,
-  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { cookies } from "next/headers";
-import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWithPersistence";
 
-export default async function DashboardPage({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+export default function WorkersPage() {
+  const [workers, setWorkers] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  const workers = [
-    {
-      id: "aa60b95c-71a5-4651-9950-ccaa5cdd6754",
-      name: "test",
-      isCleaning: false,
-      currentRoom: null,
-    },
-  ];
+  useEffect(() => {
+    async function fetchWorkers() {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
 
-  const loading = workers.length === 0;
+        const data = await res.json();
+        setWorkers(data.data);
+        setFiltered(data.data);
+      } catch (e) {
+        setWorkers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  // const [workers, setWorkers] = useState<any[]>([]);
-
-  // const [filtered, setFiltered] = useState<any[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [search, setSearch] = useState("");
-
-  // useEffect(() => {
-  //   async function fetchWorkers() {
-  //     try {
-  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workers`, {
-  //         credentials: "include",
-  //         cache: "no-store",
-  //       });
-
-  //       const data = await res.json();
-  //       setWorkers(data.data);
-  //       setFiltered(data.data);
-  //     } catch (e) {
-  //       setWorkers([]);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   fetchWorkers();
-  // }, []);
+    fetchWorkers();
+  }, []);
 
   // Filter with debounce
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     const q = search.toLowerCase();
-  //     setFiltered(workers.filter((w) => w.name.toLowerCase().includes(q)));
-  //   }, 200);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const q = search.toLowerCase();
+      setFiltered(workers.filter((w) => w.name.toLowerCase().includes(q)));
+    }, 200);
 
-  //   return () => clearTimeout(timer);
-  // }, [search, workers]);
+    return () => clearTimeout(timer);
+  }, [search, workers]);
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <SidebarProviderWithPersistence>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Pracownicy</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="h-4 mx-2" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Pracownicy</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </header>
 
-        {/* Content */}
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            {/* <h2 className="text-xl font-semibold">Pracownicy</h2> */}
+            <h2 className="text-xl font-semibold">Pracownicy</h2>
             <Input
               placeholder="Szukaj pracownika..."
               className="w-60"
-              // value={search}
-              // onChange={(e) => setSearch(e.target.value)}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {/* Table */}
+
           <div className="border rounded-lg bg-white p-4 shadow-sm">
-            {/* TABLE HEADER */}
             <div className="grid grid-cols-4 font-medium text-sm pb-2 border-b">
               <span>Nazwa</span>
-              <span>Status sprzątania</span>
+              <span>Status</span>
               <span>Pomieszczenie</span>
               <span>Akcja</span>
             </div>
 
-            {/* LOADING SKELETON */}
             {loading &&
-              [...Array(10)].map((_, i) => (
+              [...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-4 py-3 border-b last:border-0 items-center"
+                  className="grid grid-cols-4 py-3 border-b items-center"
                 >
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-4 w-20" />
@@ -134,48 +109,40 @@ export default async function DashboardPage({
                 </div>
               ))}
 
-            {/* DATA ROWS */}
             {!loading &&
-              workers.map((worker) => (
+              filtered.map((worker) => (
                 <div
                   key={worker.id}
-                  className="grid grid-cols-4 py-3 border-b last:border-0 items-center text-sm"
+                  className="grid grid-cols-4 py-3 border-b items-center text-sm"
                 >
                   <span className="font-medium">{worker.name}</span>
 
                   <span>
                     {worker.isCleaning ? (
-                      <Badge variant="default" className="bg-red-600">
-                        Sprząta
-                      </Badge>
+                      <Badge className="bg-green-600">Sprząta</Badge>
                     ) : (
-                      <Badge variant="default" className="bg-green-600">
-                        Wolny
-                      </Badge>
+                      <Badge variant="secondary">Wolny</Badge>
                     )}
                   </span>
 
                   <span>
-                    {worker.currentRoom ? (
-                      <span>{worker.currentRoom}</span>
-                    ) : (
+                    {worker.currentRoom || (
                       <span className="text-gray-400 italic">Brak</span>
                     )}
                   </span>
 
-                  <Link
-                    href={`/dashboard/workers/${worker.id}`}
-                    className="w-fit"
-                  >
-                    <Button size="sm" className="cursor-pointer w-fit">
-                      Szczegóły
-                    </Button>
+                  <Link href={`/pracownicy/${worker.id}`}>
+                    <Button size="sm">Szczegóły</Button>
                   </Link>
                 </div>
               ))}
+
+            {!loading && filtered.length === 0 && (
+              <div className="text-center py-6 text-gray-500">Brak wyników</div>
+            )}
           </div>
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </SidebarProviderWithPersistence>
   );
 }

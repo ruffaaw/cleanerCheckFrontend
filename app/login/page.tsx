@@ -35,7 +35,7 @@ export default function LoginPage() {
         { withCredentials: true }
       );
 
-      router.push("/dashboard");
+      router.push("/pracownicy");
     } catch (err: any) {
       setError("Nieprawidłowy email lub hasło");
     }
