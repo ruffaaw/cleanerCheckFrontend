@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWithPersistence";
+import { Input } from "@/components/ui/input";
 
 function formatDuration(minutes: number | null) {
   if (minutes === null) return "W trakcie";
@@ -35,6 +36,13 @@ export default function WorkerDetailsPage() {
   const { id } = useParams();
   const [worker, setWorker] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     async function fetchData() {
@@ -58,6 +66,27 @@ export default function WorkerDetailsPage() {
     fetchData();
   }, [id]);
 
+  const filteredHistory = worker?.history?.filter((h: any) => {
+    const roomMatch = h.room.toLowerCase().includes(search.toLowerCase());
+
+    const start = new Date(h.startTime);
+    const afterStart = !startDate || start >= new Date(startDate);
+    const beforeEnd = !endDate || start <= new Date(endDate);
+
+    return roomMatch && afterStart && beforeEnd;
+  });
+
+  const totalPages = Math.ceil((filteredHistory?.length || 0) / itemsPerPage);
+
+  const currentData = filteredHistory?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, startDate, endDate]);
+
   return (
     <SidebarProviderWithPersistence>
       <AppSidebar />
@@ -69,9 +98,7 @@ export default function WorkerDetailsPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard/workers">
-                  Pracownicy
-                </BreadcrumbLink>
+                <BreadcrumbLink href="/pracownicy">Pracownicy</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbItem>
                 <BreadcrumbPage>Szczegóły</BreadcrumbPage>
@@ -124,6 +151,34 @@ export default function WorkerDetailsPage() {
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <h3 className="font-medium text-lg mb-3">Historia sprzątania</h3>
 
+            {/* FILTRY */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <Input
+                placeholder="Szukaj po pokoju..."
+                className="w-60"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Od:</label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-40"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Do:</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-40"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-4 font-medium text-sm border-b pb-2">
               <span>Pomieszczenie</span>
               <span>Start</span>
@@ -148,7 +203,7 @@ export default function WorkerDetailsPage() {
             )}
 
             {!loading &&
-              worker?.history?.map((h: any, i: number) => (
+              currentData?.map((h: any, i: number) => (
                 <div key={i} className="grid grid-cols-4 py-3 border-b text-sm">
                   <span className="font-medium">{h.room}</span>
                   <span>{new Date(h.startTime).toLocaleString()}</span>
@@ -161,6 +216,33 @@ export default function WorkerDetailsPage() {
                 </div>
               ))}
           </div>
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Poprzednia
+              </Button>
+
+              <span className="text-sm text-gray-600">
+                Strona {currentPage} z {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Następna
+              </Button>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProviderWithPersistence>
