@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&display=swap");
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -119,4 +121,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+body {
+  font-family: "Figtree", sans-serif;
 }
