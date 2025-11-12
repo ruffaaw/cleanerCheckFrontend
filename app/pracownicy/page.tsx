@@ -27,6 +27,15 @@ export default function WorkersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedWorkers = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   useEffect(() => {
     async function fetchWorkers() {
       try {
@@ -96,7 +105,7 @@ export default function WorkersPage() {
             </div>
 
             {loading &&
-              [...Array(3)].map((_, i) => (
+              [...Array(10)].map((_, i) => (
                 <div
                   key={i}
                   className="grid grid-cols-4 py-3 border-b items-center"
@@ -109,7 +118,7 @@ export default function WorkersPage() {
               ))}
 
             {!loading &&
-              filtered.map((worker) => (
+              paginatedWorkers.map((worker) => (
                 <div
                   key={worker.id}
                   className="grid grid-cols-4 py-3 border-b items-center text-sm"
@@ -118,9 +127,13 @@ export default function WorkersPage() {
 
                   <span>
                     {worker.isCleaning ? (
-                      <Badge className="bg-green-600">Sprząta</Badge>
+                      <Badge variant="default" className="bg-red-600">
+                        Sprząta
+                      </Badge>
                     ) : (
-                      <Badge variant="secondary">Wolny</Badge>
+                      <Badge variant="default" className="bg-green-600">
+                        Wolny
+                      </Badge>
                     )}
                   </span>
 
@@ -145,6 +158,33 @@ export default function WorkersPage() {
               <div className="text-center py-6 text-gray-500">Brak wyników</div>
             )}
           </div>
+          {!loading && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Poprzednia
+              </Button>
+
+              <span className="text-sm text-gray-600">
+                Strona {currentPage} z {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Następna
+              </Button>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProviderWithPersistence>

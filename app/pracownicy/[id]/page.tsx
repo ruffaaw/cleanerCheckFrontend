@@ -115,7 +115,9 @@ export default function WorkerDetailsPage() {
             </h2>
 
             <Link href="/pracownicy">
-              <Button variant="outline">Powrót</Button>
+              <Button variant="outline" className="cursor-pointer">
+                Powrót
+              </Button>
             </Link>
           </div>
 
@@ -132,9 +134,13 @@ export default function WorkerDetailsPage() {
                 <p>
                   <span className="font-medium">Status: </span>
                   {worker?.isCleaning ? (
-                    <Badge className="bg-green-600">Sprząta</Badge>
+                    <Badge variant="default" className="bg-red-600">
+                      Sprząta
+                    </Badge>
                   ) : (
-                    <Badge variant="secondary">Wolny</Badge>
+                    <Badge variant="default" className="bg-green-600">
+                      Wolny
+                    </Badge>
                   )}
                 </p>
                 <p>
