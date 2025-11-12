@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
@@ -20,12 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWithPersistence";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -36,31 +34,34 @@ export default function WorkersPage() {
     currentPage * itemsPerPage
   );
 
-  useEffect(() => {
-    async function fetchWorkers() {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers`,
-          {
-            credentials: "include",
-            cache: "no-store",
-          }
-        );
+  async function fetchWorkers() {
+    setLoading(true);
+    setError(null);
 
-        const data = await res.json();
-        setWorkers(data.data);
-        setFiltered(data.data);
-      } catch (e) {
-        setWorkers([]);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+      setWorkers(data.data);
+      setFiltered(data.data);
+    } catch (e) {
+      setWorkers([]);
+      setError("Nie udało się pobrać listy pracowników");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchWorkers();
   }, []);
 
-  // Filter with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       const q = search.toLowerCase();
@@ -94,6 +95,17 @@ export default function WorkersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchWorkers}
+                disabled={loading}
+              >
+                Odśwież
+              </Button>
+            </div>
           </div>
 
           <div className="border rounded-lg bg-white p-4 shadow-sm">
@@ -104,18 +116,25 @@ export default function WorkersPage() {
               <span>Akcja</span>
             </div>
 
-            {loading &&
-              [...Array(10)].map((_, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-4 py-3 border-b items-center"
-                >
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-8 w-24" />
+            {loading && (
+              <div className="relative">
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-4 py-3 border-b items-center opacity-50"
+                  >
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                ))}
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Spinner className="size-8 text-gray-500" />
                 </div>
-              ))}
+              </div>
+            )}
 
             {!loading &&
               paginatedWorkers.map((worker) => (
@@ -153,6 +172,10 @@ export default function WorkersPage() {
                   </Link>
                 </div>
               ))}
+
+            {error && (
+              <div className="text-center text-red-600 py-4">{error}</div>
+            )}
 
             {!loading && filtered.length === 0 && (
               <div className="text-center py-6 text-gray-500">Brak wyników</div>

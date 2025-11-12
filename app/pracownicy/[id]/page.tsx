@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -22,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWithPersistence";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 function formatDuration(minutes: number | null) {
   if (minutes === null) return "W trakcie";
@@ -44,25 +41,25 @@ export default function WorkerDetailsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers/${id}`,
-          {
-            credentials: "include",
-          }
-        );
+  async function fetchData() {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers/${id}`,
+        {
+          credentials: "include",
+        }
+      );
 
-        const data = await res.json();
-        setWorker(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+      const data = await res.json();
+      setWorker(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchData();
   }, [id]);
 
@@ -91,7 +88,6 @@ export default function WorkerDetailsPage() {
     <SidebarProviderWithPersistence>
       <AppSidebar />
       <SidebarInset>
-        {/* HEADER */}
         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mx-2 h-4" />
@@ -108,20 +104,32 @@ export default function WorkerDetailsPage() {
         </header>
 
         <div className="p-6 space-y-6">
-          {/* Worker Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">
               {loading ? <Skeleton className="h-6 w-48" /> : worker?.workerName}
             </h2>
 
-            <Link href="/pracownicy">
-              <Button variant="outline" className="cursor-pointer">
-                Powrót
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLoading(true);
+                  fetchData();
+                }}
+                disabled={loading}
+              >
+                Odśwież
               </Button>
-            </Link>
+
+              <Link href="/pracownicy">
+                <Button variant="outline" size="sm" className="cursor-pointer">
+                  Powrót
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          {/* Info card */}
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             {loading ? (
               <div className="space-y-3">
@@ -153,11 +161,9 @@ export default function WorkerDetailsPage() {
             )}
           </div>
 
-          {/* History table */}
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <h3 className="font-medium text-lg mb-3">Historia sprzątania</h3>
 
-            {/* FILTRY */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Input
                 placeholder="Szukaj po pokoju..."
@@ -192,15 +198,25 @@ export default function WorkerDetailsPage() {
               <span>Czas trwania</span>
             </div>
 
-            {loading &&
-              [...Array(5)].map((_, i) => (
-                <div key={i} className="grid grid-cols-4 py-3 border-b">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-20" />
+            {loading && (
+              <div className="relative">
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-4 py-3 border-b items-center opacity-50"
+                  >
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                ))}
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Spinner className="size-8 text-gray-500" />
                 </div>
-              ))}
+              </div>
+            )}
 
             {!loading && (!worker?.history || worker.history.length === 0) && (
               <div className="text-center py-6 text-gray-500">
