@@ -79,7 +79,6 @@ export default function WorkersPage() {
 
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Pracownicy</h2>
             <Input
               placeholder="Szukaj pracownika..."
               className="w-60"
@@ -131,8 +130,13 @@ export default function WorkersPage() {
                     )}
                   </span>
 
-                  <Link href={`/pracownicy/${worker.id}`}>
-                    <Button size="sm">Szczegóły</Button>
+                  <Link
+                    href={`/pracownicy/${worker.id}`}
+                    className="cursor-pointer w-fit"
+                  >
+                    <Button size="sm" className="cursor-pointer">
+                      Szczegóły
+                    </Button>
                   </Link>
                 </div>
               ))}
