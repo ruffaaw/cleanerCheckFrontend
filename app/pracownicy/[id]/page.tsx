@@ -39,7 +39,22 @@ export default function WorkerDetailsPage() {
   const [endDate, setEndDate] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("itemsPerPagePracownicyDetails");
+      return saved ? Number(saved) : 10;
+    }
+    return 10;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "itemsPerPagePracownicyDetails",
+        String(itemsPerPage)
+      );
+    }
+  }, [itemsPerPage]);
 
   async function fetchData() {
     try {
@@ -238,31 +253,53 @@ export default function WorkerDetailsPage() {
                 </div>
               ))}
           </div>
-          {!loading && totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Poprzednia
-              </Button>
+          {!loading && (
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Na stronę:</label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border rounded-md px-2 py-1 text-sm"
+                >
+                  {[5, 10, 25, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <span className="text-sm text-gray-600">
-                Strona {currentPage} z {totalPages}
-              </span>
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Poprzednia
+                  </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages}
-              >
-                Następna
-              </Button>
+                  <span className="text-sm text-gray-600">
+                    Strona {currentPage} z {totalPages}
+                  </span>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Następna
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
