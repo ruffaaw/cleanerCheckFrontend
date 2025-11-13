@@ -205,7 +205,7 @@ export default function WorkersPage() {
                   }}
                   className="border rounded-md px-2 py-1 text-sm"
                 >
-                  {[1, 5, 10, 25, 50].map((n) => (
+                  {[5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
