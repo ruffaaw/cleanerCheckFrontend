@@ -4,7 +4,14 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
 function SidebarPersistence() {
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar_state");
+    if (saved !== null && (saved === "true") !== open) {
+      setOpen(saved === "true");
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("sidebar_state", open ? "true" : "false");
@@ -18,12 +25,8 @@ export function SidebarProviderWithPersistence({
 }: {
   children: React.ReactNode;
 }) {
-  const defaultOpen =
-    typeof window !== "undefined" &&
-    localStorage.getItem("sidebar_state") === "true";
-
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <SidebarProvider defaultOpen={false}>
       {children}
       <SidebarPersistence />
     </SidebarProvider>
