@@ -158,7 +158,7 @@ export default function WorkersPage() {
 
                   <span>
                     {worker.currentRoom || (
-                      <span className="text-gray-400 italic">Brak</span>
+                      <span className="text-gray-400 italic">—</span>
                     )}
                   </span>
 

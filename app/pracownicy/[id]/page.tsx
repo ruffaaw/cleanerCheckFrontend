@@ -154,7 +154,7 @@ export default function WorkerDetailsPage() {
                 <p>
                   <span className="font-medium">Aktualny pokój: </span>
                   {worker?.currentRoom ?? (
-                    <span className="text-gray-400 italic">Brak</span>
+                    <span className="text-gray-400 italic">—</span>
                   )}
                 </p>
               </div>
