@@ -33,12 +33,12 @@ const data = {
   panel: [
     {
       title: "Pracownicy",
-      url: "pracownicy",
+      url: "/pracownicy",
       icon: User,
     },
     {
       title: "Pomieszczenia",
-      url: "pomieszczenia",
+      url: "/pomieszczenia",
       icon: Toilet,
     },
   ],
