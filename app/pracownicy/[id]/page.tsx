@@ -58,14 +58,27 @@ export default function WorkerDetailsPage() {
 
   async function fetchData() {
     try {
+      const params = new URLSearchParams();
+
+      params.append("page", String(currentPage));
+      params.append("limit", String(itemsPerPage));
+
+      if (search.length >= 3) {
+        params.append("search", search.toLowerCase());
+      }
+
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/workers/${id}`,
-        {
-          credentials: "include",
-        }
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/dashboard/workers/${id}?${params.toString()}`,
+        { credentials: "include" }
       );
 
       const data = await res.json();
+      console.log(data);
       setWorker(data);
     } catch (e) {
       console.error(e);
@@ -74,30 +87,19 @@ export default function WorkerDetailsPage() {
     }
   }
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
-  const filteredHistory = worker?.history?.filter((h: any) => {
-    const roomMatch = h.room.toLowerCase().includes(search.toLowerCase());
-
-    const start = new Date(h.startTime);
-    const afterStart = !startDate || start >= new Date(startDate);
-    const beforeEnd = !endDate || start <= new Date(endDate);
-
-    return roomMatch && afterStart && beforeEnd;
-  });
-
-  const totalPages = Math.ceil((filteredHistory?.length || 0) / itemsPerPage);
-
-  const currentData = filteredHistory?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(worker?.pagination.totalPages || 0);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, startDate, endDate]);
+
+    if (search.length === 0 || search.length >= 3) {
+      fetchData();
+    }
+  }, [search, startDate, endDate, itemsPerPage]);
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
 
   return (
     <SidebarProviderWithPersistence>
@@ -234,13 +236,11 @@ export default function WorkerDetailsPage() {
             )}
 
             {!loading && (!worker?.history || worker.history.length === 0) && (
-              <div className="text-center py-6 text-gray-500">
-                Brak historii
-              </div>
+              <div className="text-center py-6 text-gray-500">Brak wyników</div>
             )}
 
             {!loading &&
-              currentData?.map((h: any, i: number) => (
+              worker.history?.map((h: any, i: number) => (
                 <div key={i} className="grid grid-cols-4 py-3 border-b text-sm">
                   <span className="font-medium">{h.room}</span>
                   <span>{new Date(h.startTime).toLocaleString()}</span>
