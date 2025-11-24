@@ -96,7 +96,7 @@ export default function WorkerDetailsPage() {
     }
   }
 
-  const totalPages = Math.ceil(worker?.pagination.totalPages || 0);
+  const totalPages = Math.ceil(worker?.pagination?.totalPages || 0);
 
   function toggleSort(column: string) {
     if (sortBy === column) {

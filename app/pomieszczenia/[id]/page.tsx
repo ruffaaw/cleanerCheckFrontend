@@ -31,13 +31,20 @@ function formatDuration(minutes: number | null) {
 
 export default function RoomDetailsPage() {
   const { id } = useParams();
-  const [room, setRoom] = useState<any | null>(null);
+
+  const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ---- FILTRY ----
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // ---- SORTOWANIE ----
+  const [sortBy, setSortBy] = useState("startTime");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
+
+  // ---- PAGINACJA ----
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(() => {
     if (typeof window !== "undefined") {
@@ -46,6 +53,15 @@ export default function RoomDetailsPage() {
     }
     return 10;
   });
+
+  function toggleSort(column: string) {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === "ASC" ? "DESC" : "ASC"));
+    } else {
+      setSortBy(column);
+      setSortOrder("ASC");
+    }
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -56,17 +72,33 @@ export default function RoomDetailsPage() {
     }
   }, [itemsPerPage]);
 
+  // ---- FETCH ----
   async function fetchData() {
+    setLoading(true);
+
+    const params = new URLSearchParams({
+      page: String(currentPage),
+      limit: String(itemsPerPage),
+      search,
+      sortBy,
+      sortOrder,
+    });
+
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/rooms/${id}`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/dashboard/rooms/${id}?${params.toString()}`,
         {
           credentials: "include",
         }
       );
 
-      const data = await res.json();
-      setRoom(data);
+      const json = await res.json();
+      setData(json);
     } catch (e) {
       console.error(e);
     } finally {
@@ -74,30 +106,27 @@ export default function RoomDetailsPage() {
     }
   }
 
+  // Za każdym razem gdy zmienia się filtr lub sortowanie → pobierz dane
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [
+    id,
+    currentPage,
+    itemsPerPage,
+    search,
+    startDate,
+    endDate,
+    sortBy,
+    sortOrder,
+  ]);
 
-  const filteredHistory = room?.history?.filter((h: any) => {
-    const workerMatch = h.worker.toLowerCase().includes(search.toLowerCase());
-
-    const start = new Date(h.startTime);
-    const afterStart = !startDate || start >= new Date(startDate);
-    const beforeEnd = !endDate || start <= new Date(endDate);
-
-    return workerMatch && afterStart && beforeEnd;
-  });
-
-  const totalPages = Math.ceil((filteredHistory?.length || 0) / itemsPerPage);
-
-  const currentData = filteredHistory?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
+  // Reset strony po zmianie filtrów
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, startDate, endDate]);
+  }, [search, startDate, endDate, sortBy, sortOrder]);
+
+  const history = data?.history || [];
+  const pagination = data?.pagination || {};
 
   return (
     <SidebarProviderWithPersistence>
@@ -121,34 +150,34 @@ export default function RoomDetailsPage() {
         </header>
 
         <div className="p-6 space-y-6">
-          {/* GÓRNY NAGŁÓWEK */}
+          {/* GÓRA */}
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">
-              {loading ? <Skeleton className="h-6 w-48" /> : room?.roomName}
+              {loading ? (
+                <Skeleton className="h-6 w-48" />
+              ) : (
+                data?.roomName || "Pomieszczenie"
+              )}
             </h2>
 
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setLoading(true);
-                  fetchData();
-                }}
+                onClick={() => fetchData()}
                 disabled={loading}
               >
                 Odśwież
               </Button>
-
               <Link href="/pomieszczenia">
-                <Button variant="outline" size="sm" className="cursor-pointer">
+                <Button variant="outline" size="sm">
                   Powrót
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* PODSTAWOWE INFORMACJE */}
+          {/* INFORMACJE */}
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             {loading ? (
               <div className="space-y-3">
@@ -160,25 +189,27 @@ export default function RoomDetailsPage() {
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">Status: </span>
-                  {room?.currentStatus === "W trakcie" ? (
+                  {data?.currentStatus === "W trakcie" ? (
                     <Badge variant="default" className="bg-red-600">
-                      {room.currentStatus}
+                      {data.currentStatus}
                     </Badge>
                   ) : (
                     <Badge variant="default" className="bg-green-600">
-                      {room.currentStatus}
+                      {data.currentStatus}
                     </Badge>
                   )}
                 </p>
+
                 <p>
                   <span className="font-medium">Sprzątane od: </span>
-                  {room?.cleaningSince ?? (
+                  {data?.cleaningSince ?? (
                     <span className="text-gray-400 italic">—</span>
                   )}
                 </p>
+
                 <p>
                   <span className="font-medium">Ostatnie sprzątanie: </span>
-                  {room?.lastCleaning ?? (
+                  {data?.lastCleaning ?? (
                     <span className="text-gray-400 italic">—</span>
                   )}
                 </p>
@@ -186,10 +217,11 @@ export default function RoomDetailsPage() {
             )}
           </div>
 
-          {/* HISTORIA SPRZĄTAŃ */}
+          {/* HISTORIA */}
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <h3 className="font-medium text-lg mb-3">Historia sprzątań</h3>
 
+            {/* FILTRY */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Input
                 placeholder="Szukaj po pracowniku..."
@@ -197,6 +229,7 @@ export default function RoomDetailsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Od:</label>
                 <Input
@@ -206,6 +239,7 @@ export default function RoomDetailsPage() {
                   className="w-40"
                 />
               </div>
+
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Do:</label>
                 <Input
@@ -219,18 +253,43 @@ export default function RoomDetailsPage() {
 
             {/* TABELA */}
             <div className="grid grid-cols-4 font-medium text-sm border-b pb-2">
-              <span>Pracownik</span>
-              <span>Start</span>
-              <span>Koniec</span>
-              <span>Czas trwania</span>
+              <span
+                onClick={() => toggleSort("worker")}
+                className="cursor-pointer"
+              >
+                Pracownik{" "}
+                {sortBy === "worker" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+              <span
+                onClick={() => toggleSort("startTime")}
+                className="cursor-pointer"
+              >
+                Start{" "}
+                {sortBy === "startTime" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+              <span
+                onClick={() => toggleSort("endTime")}
+                className="cursor-pointer"
+              >
+                Koniec{" "}
+                {sortBy === "endTime" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+              <span
+                onClick={() => toggleSort("duration")}
+                className="cursor-pointer"
+              >
+                Czas trwania{" "}
+                {sortBy === "duration" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
             </div>
 
+            {/* LOADING */}
             {loading && (
               <div className="relative">
                 {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-4 py-3 border-b items-center opacity-50"
+                    className="grid grid-cols-4 py-3 border-b opacity-50"
                   >
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-32" />
@@ -238,21 +297,14 @@ export default function RoomDetailsPage() {
                     <Skeleton className="h-4 w-20" />
                   </div>
                 ))}
-
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Spinner className="size-8 text-gray-500" />
                 </div>
               </div>
             )}
 
-            {!loading && (!room?.history || room.history.length === 0) && (
-              <div className="text-center py-6 text-gray-500">
-                Brak historii
-              </div>
-            )}
-
             {!loading &&
-              currentData?.map((h: any, i: number) => (
+              history.map((h: any, i: number) => (
                 <div key={i} className="grid grid-cols-4 py-3 border-b text-sm">
                   <span className="font-medium">{h.worker}</span>
                   <span>{new Date(h.startTime).toLocaleString()}</span>
@@ -279,7 +331,7 @@ export default function RoomDetailsPage() {
                   }}
                   className="border rounded-md px-2 py-1 text-sm"
                 >
-                  {[5, 10, 25, 50].map((n) => (
+                  {[1, 5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
@@ -287,7 +339,7 @@ export default function RoomDetailsPage() {
                 </select>
               </div>
 
-              {totalPages > 1 && (
+              {pagination?.totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2">
                   <Button
                     variant="outline"
@@ -299,16 +351,18 @@ export default function RoomDetailsPage() {
                   </Button>
 
                   <span className="text-sm text-gray-600">
-                    Strona {currentPage} z {totalPages}
+                    Strona {pagination.page} z {pagination.totalPages}
                   </span>
 
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      setCurrentPage((p) =>
+                        Math.min(pagination.totalPages, p + 1)
+                      )
                     }
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage === pagination.totalPages}
                   >
                     Następna
                   </Button>

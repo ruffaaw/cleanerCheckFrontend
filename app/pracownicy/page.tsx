@@ -46,7 +46,7 @@ export default function WorkersPage() {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 
-  const totalPages = Math.ceil(workers?.pagination.totalPages || 0);
+  const totalPages = Math.ceil(workers?.pagination?.totalPages || 0);
 
   function toggleSort(column: string) {
     if (sortBy === column) {

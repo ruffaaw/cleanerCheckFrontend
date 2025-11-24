@@ -20,11 +20,17 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
-  const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // filtry
+  const [search, setSearch] = useState("");
+
+  // sortowanie
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
+
+  // paginacja
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(() => {
     if (typeof window !== "undefined") {
@@ -34,25 +40,50 @@ export default function RoomsPage() {
     return 10;
   });
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  });
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("itemsPerPagePomieszczenia", String(itemsPerPage));
     }
   }, [itemsPerPage]);
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginatedRooms = filtered.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // toggle sort
+  function toggleSort(column: string) {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === "ASC" ? "DESC" : "ASC"));
+    } else {
+      setSortBy(column);
+      setSortOrder("ASC");
+    }
+  }
 
+  // ============================
+  // FETCH DATA
+  // ============================
   async function fetchRooms() {
     setLoading(true);
     setError(null);
 
     try {
+      const params = new URLSearchParams();
+      params.append("page", String(currentPage));
+      params.append("limit", String(itemsPerPage));
+
+      if (search.length >= 3) params.append("search", search.toLowerCase());
+
+      params.append("sortBy", sortBy);
+      params.append("sortOrder", sortOrder);
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/rooms`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/dashboard/rooms?${params.toString()}`,
         {
           credentials: "include",
           cache: "no-store",
@@ -60,28 +91,42 @@ export default function RoomsPage() {
       );
 
       const data = await res.json();
+
       setRooms(data.data);
-      setFiltered(data.data);
-    } catch (e) {
-      setRooms([]);
+      setPagination(data.pagination);
+    } catch (err) {
+      console.error(err);
       setError("Nie udało się pobrać listy pomieszczeń");
     } finally {
       setLoading(false);
     }
   }
 
+  // ============================
+  // EFEKTY
+  // ============================
+
+  // 1) zmiana itemsPerPage lub search
+  useEffect(() => {
+    setCurrentPage(1);
+
+    if (search.length === 0 || search.length >= 3) {
+      fetchRooms();
+    }
+  }, [search, itemsPerPage]);
+
+  // 2) zmiana strony
   useEffect(() => {
     fetchRooms();
-  }, []);
+  }, [currentPage]);
 
+  // 3) zmiana sortowania
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const q = search.toLowerCase();
-      setFiltered(rooms.filter((r) => r.name.toLowerCase().includes(q)));
-    }, 200);
+    setCurrentPage(1);
+    fetchRooms();
+  }, [sortBy, sortOrder]);
 
-    return () => clearTimeout(timer);
-  }, [search, rooms]);
+  const totalPages = pagination?.totalPages;
 
   return (
     <SidebarProviderWithPersistence>
@@ -100,9 +145,8 @@ export default function RoomsPage() {
           </Breadcrumb>
         </header>
 
-        {/* MAIN */}
         <div className="p-6">
-          {/* Top bar */}
+          {/* TOP BAR */}
           <div className="flex justify-between items-center mb-4">
             <Input
               placeholder="Szukaj pomieszczenia..."
@@ -110,27 +154,40 @@ export default function RoomsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchRooms}
-                disabled={loading}
-              >
-                Odśwież
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchRooms}
+              disabled={loading}
+            >
+              Odśwież
+            </Button>
           </div>
 
-          {/* Table */}
+          {/* TABELA */}
           <div className="border rounded-lg bg-white p-4 shadow-sm">
-            <div className="grid grid-cols-6 font-medium text-sm pb-2 border-b">
-              <span>Nazwa</span>
-              <span>Status</span>
-              <span>Pracownik</span>
+            <div className="grid grid-cols-6 font-medium text-sm pb-2 border-b select-none">
+              <span
+                onClick={() => toggleSort("name")}
+                className="cursor-pointer"
+              >
+                Nazwa {sortBy === "name" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+
+              <span>Status </span>
+
+              <span>Pracownik </span>
+
               <span>Sprzątane od</span>
-              <span>Ostatnie sprzątanie</span>
+
+              <span
+                onClick={() => toggleSort("lastCleaning")}
+                className="cursor-pointer"
+              >
+                Ostatnie sprzątanie{" "}
+                {sortBy === "lastCleaning" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+
               <span>Akcja</span>
             </div>
 
@@ -156,9 +213,9 @@ export default function RoomsPage() {
               </div>
             )}
 
-            {/* DATA */}
+            {/* DANE */}
             {!loading &&
-              paginatedRooms.map((room) => (
+              rooms?.map((room) => (
                 <div
                   key={room.id}
                   className="grid grid-cols-6 py-3 border-b items-center text-sm"
@@ -167,41 +224,33 @@ export default function RoomsPage() {
 
                   <span>
                     {room.status === "W trakcie" ? (
-                      <Badge variant="default" className="bg-red-600">
-                        {room.status}
-                      </Badge>
+                      <Badge className="bg-red-600">{room.status}</Badge>
                     ) : room.status === "Nigdy nie sprzątane" ? (
                       <Badge variant="secondary">{room.status}</Badge>
                     ) : (
-                      <Badge variant="default" className="bg-green-600">
-                        {room.status}
-                      </Badge>
+                      <Badge className="bg-green-600">{room.status}</Badge>
                     )}
                   </span>
 
                   <span>
-                    {room.worker ? (
-                      room.worker
-                    ) : (
+                    {room.worker || (
                       <span className="text-gray-400 italic">—</span>
                     )}
                   </span>
 
                   <span>
-                    {room.cleaningSince ?? (
+                    {room.cleaningSince || (
                       <span className="text-gray-400 italic">—</span>
                     )}
                   </span>
 
                   <span>
-                    {room.lastCleaning ?? (
+                    {room.lastCleaningText || (
                       <span className="text-gray-400 italic">—</span>
                     )}
                   </span>
-                  <Link
-                    href={`/pomieszczenia/${room.id}`}
-                    className="cursor-pointer w-fit"
-                  >
+
+                  <Link href={`/pomieszczenia/${room.id}`}>
                     <Button size="sm" className="cursor-pointer">
                       Szczegóły
                     </Button>
@@ -209,18 +258,16 @@ export default function RoomsPage() {
                 </div>
               ))}
 
-            {/* ERROR */}
             {error && (
               <div className="text-center text-red-600 py-4">{error}</div>
             )}
 
-            {/* EMPTY */}
-            {!loading && filtered.length === 0 && (
+            {!loading && rooms?.length === 0 && (
               <div className="text-center py-6 text-gray-500">Brak wyników</div>
             )}
           </div>
 
-          {/* PAGINATION */}
+          {/* PAGINACJA */}
           {!loading && (
             <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
@@ -242,7 +289,7 @@ export default function RoomsPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -253,7 +300,7 @@ export default function RoomsPage() {
                   </Button>
 
                   <span className="text-sm text-gray-600">
-                    Strona {currentPage} z {totalPages}
+                    Strona {pagination.page} z {totalPages}
                   </span>
 
                   <Button
