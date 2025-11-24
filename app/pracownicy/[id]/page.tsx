@@ -34,10 +34,16 @@ export default function WorkerDetailsPage() {
   const [worker, setWorker] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Filtry
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Sortowanie
+  const [sortBy, setSortBy] = useState("startTime");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
+
+  //Paginacja
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(() => {
     if (typeof window !== "undefined") {
@@ -56,6 +62,7 @@ export default function WorkerDetailsPage() {
     }
   }, [itemsPerPage]);
 
+  // Pobieranie z API
   async function fetchData() {
     try {
       const params = new URLSearchParams();
@@ -70,6 +77,9 @@ export default function WorkerDetailsPage() {
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
 
+      params.append("sortBy", sortBy);
+      params.append("sortOrder", sortOrder);
+
       const res = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
@@ -78,7 +88,6 @@ export default function WorkerDetailsPage() {
       );
 
       const data = await res.json();
-      console.log(data);
       setWorker(data);
     } catch (e) {
       console.error(e);
@@ -89,6 +98,16 @@ export default function WorkerDetailsPage() {
 
   const totalPages = Math.ceil(worker?.pagination.totalPages || 0);
 
+  function toggleSort(column: string) {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === "ASC" ? "DESC" : "ASC"));
+    } else {
+      setSortBy(column);
+      setSortOrder("ASC");
+    }
+  }
+
+  // Fetch przy zmianie filtrowania oraz ilości wyświetlanych itemów
   useEffect(() => {
     setCurrentPage(1);
 
@@ -97,9 +116,16 @@ export default function WorkerDetailsPage() {
     }
   }, [search, startDate, endDate, itemsPerPage]);
 
+  // Fetch przy zmianie strony
   useEffect(() => {
     fetchData();
   }, [currentPage]);
+
+  // Fetch przy zmianie sortowania
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchData();
+  }, [sortBy, sortOrder]);
 
   return (
     <SidebarProviderWithPersistence>
@@ -122,6 +148,7 @@ export default function WorkerDetailsPage() {
 
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
+            {/* Nazwa pracownika */}
             <h2 className="text-xl font-semibold">
               {loading ? <Skeleton className="h-6 w-48" /> : worker?.workerName}
             </h2>
@@ -208,13 +235,36 @@ export default function WorkerDetailsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 font-medium text-sm border-b pb-2">
-              <span>Pomieszczenie</span>
-              <span>Start</span>
-              <span>Koniec</span>
+            {/* Nagłówki z sortowaniem */}
+            <div className="grid grid-cols-4 font-medium text-sm border-b pb-2 select-none">
+              <span
+                className="cursor-pointer"
+                onClick={() => toggleSort("name")}
+              >
+                Pomieszczenie{" "}
+                {sortBy === "name" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+
+              <span
+                className="cursor-pointer"
+                onClick={() => toggleSort("startTime")}
+              >
+                Start{" "}
+                {sortBy === "startTime" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+
+              <span
+                className="cursor-pointer"
+                onClick={() => toggleSort("endTime")}
+              >
+                Koniec{" "}
+                {sortBy === "endTime" && (sortOrder === "ASC" ? "↑" : "↓")}
+              </span>
+
               <span>Czas trwania</span>
             </div>
 
+            {/* Ładowanie */}
             {loading && (
               <div className="relative">
                 {[...Array(10)].map((_, i) => (
@@ -235,10 +285,12 @@ export default function WorkerDetailsPage() {
               </div>
             )}
 
+            {/* Brak wyników */}
             {!loading && (!worker?.history || worker.history.length === 0) && (
               <div className="text-center py-6 text-gray-500">Brak wyników</div>
             )}
 
+            {/* Dane */}
             {!loading &&
               worker.history?.map((h: any, i: number) => (
                 <div key={i} className="grid grid-cols-4 py-3 border-b text-sm">
@@ -253,6 +305,8 @@ export default function WorkerDetailsPage() {
                 </div>
               ))}
           </div>
+
+          {/* Paginacja */}
           {!loading && (
             <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
