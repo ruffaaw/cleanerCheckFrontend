@@ -17,16 +17,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
   const router = useRouter();
   const [name, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await api.post(
@@ -40,6 +43,8 @@ export default function LoginPage() {
         : router.push("/pracownicy");
     } catch (err: any) {
       setError("Nieprawidłowy email lub hasło");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,8 +84,13 @@ export default function LoginPage() {
             <Button
               className="w-full py-2 sm:py-3 text-sm sm:text-base"
               type="submit"
+              disabled={loading}
             >
-              Zaloguj
+              {loading ? (
+                <Spinner className="text-5 sm:size-6 text-white" />
+              ) : (
+                "Zaloguj"
+              )}
             </Button>
           </form>
         </CardContent>
@@ -89,13 +99,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-// axios instance for cookies (src/lib/api.ts)
-// import axios from "axios";
-// const api = axios.create({
-//   baseURL: process.env.NEXT_PUBLIC_API_URL,
-//   withCredentials: true,
-// });
-// export default api;
-
-// backend should respond with Set-Cookie: token=JWT; HttpOnly; Secure; SameSite=Strict;

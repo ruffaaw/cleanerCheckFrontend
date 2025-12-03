@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +20,7 @@ export default function ChangePasswordPage() {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validatePasswords = () => {
     if (!password || !passwordConfirm) return;
@@ -28,6 +30,8 @@ export default function ChangePasswordPage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     validatePasswords();
     if (password !== passwordConfirm) return;
 
@@ -40,6 +44,8 @@ export default function ChangePasswordPage() {
       router.push("/pracownicy");
     } catch {
       setError("Nie udało się zmienić hasła.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,8 +94,13 @@ export default function ChangePasswordPage() {
             <Button
               className="w-full py-2 sm:py-3 text-sm sm:text-base"
               type="submit"
+              disabled={loading}
             >
-              Zmień hasło
+              {loading ? (
+                <Spinner className="text-5 sm:size-6 text-white" />
+              ) : (
+                "Zmień hasło"
+              )}
             </Button>
           </form>
         </CardContent>
