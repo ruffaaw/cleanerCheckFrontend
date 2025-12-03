@@ -29,42 +29,46 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await api.post(
+      const response = await api.post(
         "/auth/login",
         { name, password },
         { withCredentials: true }
       );
 
-      router.push("/pracownicy");
+      response.data.resetPassword
+        ? router.push("/zmiana-hasla")
+        : router.push("/pracownicy");
     } catch (err: any) {
       setError("Nieprawidłowy email lub hasło");
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-center">Logowanie</CardTitle>
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50">
+      <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl sm:text-2xl">Logowanie</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Login</Label>
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
+            <div className="space-y-1">
+              <Label className="text-sm sm:text-base">Login</Label>
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="text-sm sm:text-base"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Hasło</Label>
+            <div className="space-y-1">
+              <Label className="text-sm sm:text-base">Hasło</Label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="text-sm sm:text-base"
               />
             </div>
             {error && (
@@ -72,7 +76,10 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button className="w-full" type="submit">
+            <Button
+              className="w-full py-2 sm:py-3 text-sm sm:text-base"
+              type="submit"
+            >
               Zaloguj
             </Button>
           </form>
