@@ -146,8 +146,8 @@ export default function WorkerDetailsPage() {
           </Breadcrumb>
         </header>
 
-        <div className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="p-3 sm:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             {/* Nazwa pracownika */}
             <h2 className="text-xl font-semibold">
               {loading ? <Skeleton className="h-6 w-48" /> : worker?.workerName}
@@ -174,7 +174,7 @@ export default function WorkerDetailsPage() {
             </div>
           </div>
 
-          <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="bg-white border rounded-lg p-3 sm:p-4 shadow-sm">
             {loading ? (
               <div className="space-y-3">
                 <Skeleton className="h-4 w-32" />
@@ -208,7 +208,7 @@ export default function WorkerDetailsPage() {
           <div className="bg-white border rounded-lg p-4 shadow-sm">
             <h3 className="font-medium text-lg mb-3">Historia sprzątania</h3>
 
-            <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 mb-4">
               <Input
                 placeholder="Szukaj po pokoju..."
                 className="w-60"
@@ -236,7 +236,7 @@ export default function WorkerDetailsPage() {
             </div>
 
             {/* Nagłówki z sortowaniem */}
-            <div className="grid grid-cols-4 font-medium text-sm border-b pb-2 select-none">
+            <div className="hidden sm:grid grid-cols-4 font-medium text-sm border-b pb-2 select-none">
               <span
                 className="cursor-pointer"
                 onClick={() => toggleSort("name")}
@@ -270,7 +270,7 @@ export default function WorkerDetailsPage() {
                 {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-4 py-3 border-b items-center opacity-50"
+                    className="grid grid-cols-1 sm:grid-cols-4 py-3 border-b items-start sm:items-center gap-1 sm:gap-0 opacity-50"
                   >
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-32" />
@@ -293,15 +293,31 @@ export default function WorkerDetailsPage() {
             {/* Dane */}
             {!loading &&
               worker.history?.map((h: any, i: number) => (
-                <div key={i} className="grid grid-cols-4 py-3 border-b text-sm">
-                  <span className="font-medium">{h.room}</span>
-                  <span>{new Date(h.startTime).toLocaleString()}</span>
+                <div
+                  key={i}
+                  className="grid grid-cols-1 sm:grid-cols-4 py-3 border-b text-sm gap-1 sm:gap-0"
+                >
+                  <span className="font-medium sm:font-normal sm:text-left">
+                    <span className="sm:hidden font-medium">Pokój: </span>
+                    {h.room}
+                  </span>
+
                   <span>
+                    <span className="sm:hidden font-medium">Start: </span>
+                    {new Date(h.startTime).toLocaleString()}
+                  </span>
+
+                  <span>
+                    <span className="sm:hidden font-medium">Koniec: </span>
                     {h.endTime
                       ? new Date(h.endTime).toLocaleString()
                       : "W trakcie"}
                   </span>
-                  <span>{formatDuration(h.duration)}</span>
+
+                  <span>
+                    <span className="sm:hidden font-medium">Czas: </span>
+                    {formatDuration(h.duration)}
+                  </span>
                 </div>
               ))}
           </div>

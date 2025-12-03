@@ -139,10 +139,10 @@ export default function WorkersPage() {
         </header>
 
         <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 gap-3">
             <Input
               placeholder="Szukaj pracownika..."
-              className="w-60"
+              className="w-full sm:w-60"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
             />
@@ -153,6 +153,7 @@ export default function WorkersPage() {
                 size="sm"
                 onClick={fetchWorkers}
                 disabled={loading}
+                className="w-full sm:w-auto"
               >
                 Odśwież
               </Button>
@@ -161,7 +162,7 @@ export default function WorkersPage() {
 
           <div className="border rounded-lg bg-white p-4 shadow-sm">
             {/* Nagłówki z sortowaniem */}
-            <div className="grid grid-cols-4 font-medium text-sm pb-2 border-b select-none">
+            <div className="hidden md:grid grid-cols-4 font-medium text-sm pb-2 border-b select-none">
               <span
                 className="cursor-pointer"
                 onClick={() => toggleSort("name")}
@@ -180,7 +181,7 @@ export default function WorkersPage() {
                 {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-4 py-3 border-b items-center opacity-50"
+                    className="grid md:grid-cols-4 grid-cols-1 py-3 border-b items-center opacity-50 gap-2 md:gap-0"
                   >
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-20" />
@@ -200,36 +201,43 @@ export default function WorkersPage() {
               workers?.map((worker) => (
                 <div
                   key={worker.id}
-                  className="grid grid-cols-4 py-3 border-b items-center text-sm"
+                  className="grid md:grid-cols-4 grid-cols-1 py-3 border-b text-sm gap-2 md:gap-0"
                 >
-                  <span className="font-medium">{worker.name}</span>
+                  {/* NAZWA */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">Nazwa:</span>
+                    <span className="font-medium">{worker.name}</span>
+                  </div>
 
-                  <span>
+                  {/* STATUS */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">Status:</span>
                     {worker.isCleaning ? (
-                      <Badge variant="default" className="bg-red-600">
-                        Sprząta
-                      </Badge>
+                      <Badge className="bg-red-600 text-white">Sprząta</Badge>
                     ) : (
-                      <Badge variant="default" className="bg-green-600">
-                        Wolny
-                      </Badge>
+                      <Badge className="bg-green-600 text-white">Wolny</Badge>
                     )}
-                  </span>
+                  </div>
 
-                  <span>
+                  {/* POMIESZCZENIE */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">
+                      Pomieszczenie:
+                    </span>
                     {worker.currentRoom || (
                       <span className="text-gray-400 italic">—</span>
                     )}
-                  </span>
+                  </div>
 
-                  <Link
-                    href={`/pracownicy/${worker.id}`}
-                    className="cursor-pointer w-fit"
-                  >
-                    <Button size="sm" className="cursor-pointer">
-                      Szczegóły
-                    </Button>
-                  </Link>
+                  {/* AKCJA */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">Akcja:</span>
+                    <Link href={`/pracownicy/${worker.id}`}>
+                      <Button size="sm" className="w-full md:w-auto">
+                        Szczegóły
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               ))}
 
@@ -246,7 +254,7 @@ export default function WorkersPage() {
 
           {/* PAGINACJA */}
           {!loading && (
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4 mt-4">
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Na stronę:</label>
                 <select
@@ -268,6 +276,7 @@ export default function WorkersPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    className="w-full sm:w-auto"
                   >
                     Poprzednia
                   </Button>
@@ -281,6 +290,7 @@ export default function WorkersPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => p + 1)}
                     disabled={currentPage === totalPages}
+                    className="w-full sm:w-auto"
                   >
                     Następna
                   </Button>
