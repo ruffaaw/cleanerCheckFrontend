@@ -19,7 +19,7 @@ import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWith
 import { Spinner } from "@/components/ui/spinner";
 
 export default function WorkersPage() {
-  const [workers, setWorkers] = useState<any | null>(null);
+  const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +36,13 @@ export default function WorkersPage() {
     return 10;
   });
 
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  });
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("itemsPerPagePracownicy", String(itemsPerPage));
@@ -46,7 +53,17 @@ export default function WorkersPage() {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 
-  const totalPages = Math.ceil(workers?.pagination?.totalPages || 0);
+  const totalPages = Math.ceil(pagination?.totalPages || 0);
+
+  function handleSearch(value: string) {
+    setSearch(value);
+    setCurrentPage(1);
+  }
+
+  function handleItemsPerPage(value: number) {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  }
 
   function toggleSort(column: string) {
     if (sortBy === column) {
@@ -87,7 +104,8 @@ export default function WorkersPage() {
 
       const data = await res.json();
 
-      setWorkers(data);
+      setWorkers(data.data);
+      setPagination(data.pagination);
       setError(null);
     } catch (e) {
       setWorkers([]);
@@ -99,20 +117,10 @@ export default function WorkersPage() {
 
   // Fetch przy zmianie paginacji, sortowania, filtrowania
   useEffect(() => {
-    fetchWorkers();
-  }, [currentPage, itemsPerPage, sortBy, sortOrder]);
-
-  // Debounce wyszukiwarki – po 3 znakach
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (search.length === 0 || search.length >= 3) {
-        setCurrentPage(1);
-        fetchWorkers();
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [search]);
+    if (search.length === 0 || search.length >= 3) {
+      fetchWorkers();
+    }
+  }, [currentPage, itemsPerPage, sortBy, sortOrder, search]);
 
   return (
     <SidebarProviderWithPersistence>
@@ -136,7 +144,7 @@ export default function WorkersPage() {
               placeholder="Szukaj pracownika..."
               className="w-60"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
             />
 
             <div className="flex items-center gap-3">
@@ -189,7 +197,7 @@ export default function WorkersPage() {
 
             {/* Dane */}
             {!loading &&
-              workers.data?.map((worker: any) => (
+              workers?.map((worker) => (
                 <div
                   key={worker.id}
                   className="grid grid-cols-4 py-3 border-b items-center text-sm"
@@ -243,13 +251,10 @@ export default function WorkersPage() {
                 <label className="text-sm text-gray-600">Na stronę:</label>
                 <select
                   value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => handleItemsPerPage(Number(e.target.value))}
                   className="border rounded-md px-2 py-1 text-sm"
                 >
-                  {[1, 5, 10, 25, 50].map((n) => (
+                  {[5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>
@@ -268,7 +273,7 @@ export default function WorkersPage() {
                   </Button>
 
                   <span className="text-sm text-gray-600">
-                    Strona {currentPage}
+                    Strona {pagination.page} z {totalPages}
                   </span>
 
                   <Button

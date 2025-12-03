@@ -40,6 +40,18 @@ export default function RoomsPage() {
     return 10;
   });
 
+  // zmiana search
+  function handleSearch(value: string) {
+    setSearch(value);
+    setCurrentPage(1);
+  }
+
+  // zmiana itemsPerPage
+  function handleItemsPerPage(value: number) {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  }
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -63,9 +75,6 @@ export default function RoomsPage() {
     }
   }
 
-  // ============================
-  // FETCH DATA
-  // ============================
   async function fetchRooms() {
     setLoading(true);
     setError(null);
@@ -79,6 +88,8 @@ export default function RoomsPage() {
 
       params.append("sortBy", sortBy);
       params.append("sortOrder", sortOrder);
+
+      console.log("FETCH ROOMS", Date.now());
 
       const res = await fetch(
         `${
@@ -102,29 +113,11 @@ export default function RoomsPage() {
     }
   }
 
-  // ============================
-  // EFEKTY
-  // ============================
-
-  // 1) zmiana itemsPerPage lub search
   useEffect(() => {
-    setCurrentPage(1);
-
     if (search.length === 0 || search.length >= 3) {
       fetchRooms();
     }
-  }, [search, itemsPerPage]);
-
-  // 2) zmiana strony
-  useEffect(() => {
-    fetchRooms();
-  }, [currentPage]);
-
-  // 3) zmiana sortowania
-  useEffect(() => {
-    setCurrentPage(1);
-    fetchRooms();
-  }, [sortBy, sortOrder]);
+  }, [currentPage, itemsPerPage, search, sortBy, sortOrder]);
 
   const totalPages = pagination?.totalPages;
 
@@ -152,7 +145,7 @@ export default function RoomsPage() {
               placeholder="Szukaj pomieszczenia..."
               className="w-60"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
             />
             <Button
               variant="outline"
@@ -274,10 +267,7 @@ export default function RoomsPage() {
                 <label className="text-sm text-gray-600">Na stronę:</label>
                 <select
                   value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => handleItemsPerPage(Number(e.target.value))}
                   className="border rounded-md px-2 py-1 text-sm"
                 >
                   {[5, 10, 25, 50].map((n) => (
