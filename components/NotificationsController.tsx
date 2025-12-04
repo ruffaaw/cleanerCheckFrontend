@@ -33,7 +33,7 @@ export function NotificationsController({
   const [view, setView] = useState("unread");
   const [loading, setLoading] = useState(false);
 
-  async function loadUnreadNotifications() {
+  async function loadAllNotifications() {
     setLoading(true);
     try {
       const res = await fetch(
@@ -87,7 +87,7 @@ export function NotificationsController({
   }
 
   useEffect(() => {
-    if (open) loadUnreadNotifications();
+    if (open) loadAllNotifications();
   }, [open]);
 
   return (
@@ -96,7 +96,7 @@ export function NotificationsController({
         <SidebarMenuButton
           tooltip="Powiadomienia"
           onClick={() => setOpen(true)}
-          className="relative overflow-visible"
+          className="relative overflow-visible cursor-pointer"
         >
           <Bell className="w-5 h-5" />
 
