@@ -10,9 +10,11 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import React, { useEffect, useState } from "react";
+import { NotificationsController } from "./NotificationsController";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = useState<{ name: string } | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchUser = async () => {
     try {
@@ -39,6 +41,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   };
 
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/user/unread/count`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+      setUnreadCount(data.unreadCount);
+    } catch (err) {
+      console.error(
+        "Nie udało się pobrać liczby nieprzeczytanych powiadomień:",
+        err
+      );
+    }
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem("userData");
     if (saved) {
@@ -53,6 +76,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, []);
 
+  useEffect(() => {
+    fetchUnreadCount();
+  }, []);
+
   const data = {
     panel: [
       { title: "Pracownicy", url: "/pracownicy", icon: User },
@@ -65,7 +92,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.panel} />
       </SidebarContent>
-      <SidebarFooter>{user ? <NavUser user={user} /> : ""}</SidebarFooter>
+      <SidebarFooter>
+        <NotificationsController
+          unreadCount={unreadCount}
+          setUnreadCount={setUnreadCount}
+        />
+        {user ? <NavUser user={user} /> : null}
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
