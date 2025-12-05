@@ -1,6 +1,3 @@
-// Next.js + shadcn/ui Login component with httpOnly cookie auth
-// File: src/app/login/page.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -21,7 +18,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [name, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +31,7 @@ export default function LoginPage() {
     try {
       const response = await api.post(
         "/auth/login",
-        { name, password },
+        { name: username, password },
         { withCredentials: true }
       );
 
@@ -60,10 +57,11 @@ export default function LoginPage() {
               <Label className="text-sm sm:text-base">Login</Label>
               <Input
                 type="text"
-                value={name}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 className="text-sm sm:text-base"
+                autoComplete="username"
               />
             </div>
             <div className="space-y-1">
@@ -74,6 +72,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="text-sm sm:text-base"
+                autoComplete="current-password"
               />
             </div>
             {error && (

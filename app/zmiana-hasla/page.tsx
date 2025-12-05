@@ -62,24 +62,38 @@ export default function ChangePasswordPage() {
             className="space-y-4 sm:space-y-6"
           >
             <div className="space-y-1">
-              <Label className="text-sm sm:text-base">Hasło</Label>
+              <Label className="text-sm sm:text-base">Aktualne hasło</Label>
+              <Input
+                type="password"
+                autoComplete="current-password"
+                required
+                className="text-sm sm:text-base"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-sm sm:text-base">Nowe hasło</Label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
                 onBlur={validatePasswords}
                 className="text-sm sm:text-base"
               />
             </div>
 
             <div className="space-y-1">
-              <Label className="text-sm sm:text-base">Potwierdź hasło</Label>
+              <Label className="text-sm sm:text-base">
+                Potwierdź nowe hasło
+              </Label>
               <Input
                 type="password"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
                 required
+                autoComplete="new-password"
                 onBlur={validatePasswords}
                 className="text-sm sm:text-base"
               />
