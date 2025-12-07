@@ -89,8 +89,6 @@ export default function RoomsPage() {
       params.append("sortBy", sortBy);
       params.append("sortOrder", sortOrder);
 
-      console.log("FETCH ROOMS", Date.now());
-
       const res = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
