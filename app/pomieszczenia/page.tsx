@@ -221,9 +221,13 @@ export default function RoomsPage() {
                   <div className="flex md:block justify-between">
                     <span className="md:hidden text-gray-500">Status:</span>
                     {room.isActive ? (
-                      <Badge className="bg-red-600">{room.status}</Badge>
+                      <Badge variant="default" className="bg-red-600">
+                        {room.status}
+                      </Badge>
                     ) : (
-                      <Badge variant="secondary">{room.status}</Badge>
+                      <Badge variant="default" className="bg-green-600">
+                        {room.status}
+                      </Badge>
                     )}
                   </div>
 
