@@ -189,26 +189,26 @@ export default function RoomDetailsPage() {
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">Status: </span>
-                  {data?.currentStatus === "W trakcie" ? (
+                  {data?.isActive ? (
                     <Badge variant="default" className="bg-red-600">
-                      {data.currentStatus}
+                      {data.status}
                     </Badge>
                   ) : (
                     <Badge variant="default" className="bg-green-600">
-                      {data.currentStatus}
+                      {data.status}
                     </Badge>
                   )}
                 </p>
 
                 <p>
-                  <span className="font-medium">Sprzątane od: </span>
+                  <span className="font-medium">Pracuje od: </span>
                   {data?.cleaningSince ?? (
                     <span className="text-gray-400 italic">—</span>
                   )}
                 </p>
 
                 <p>
-                  <span className="font-medium">Ostatnie sprzątanie: </span>
+                  <span className="font-medium">Ostatnia aktywność: </span>
                   {data?.lastCleaning ?? (
                     <span className="text-gray-400 italic">—</span>
                   )}
@@ -219,7 +219,7 @@ export default function RoomDetailsPage() {
 
           {/* HISTORIA */}
           <div className="bg-white border rounded-lg p-4 shadow-sm">
-            <h3 className="font-medium text-lg mb-3">Historia sprzątań</h3>
+            <h3 className="font-medium text-lg mb-3">Historia aktywności</h3>
 
             {/* FILTRY */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 mb-4">

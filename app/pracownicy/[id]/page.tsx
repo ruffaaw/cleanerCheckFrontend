@@ -185,13 +185,13 @@ export default function WorkerDetailsPage() {
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">Status: </span>
-                  {worker?.isCleaning ? (
+                  {worker?.isActive ? (
                     <Badge variant="default" className="bg-red-600">
-                      Sprząta
+                      {worker?.status}
                     </Badge>
                   ) : (
                     <Badge variant="default" className="bg-green-600">
-                      Wolny
+                      {worker?.status}
                     </Badge>
                   )}
                 </p>

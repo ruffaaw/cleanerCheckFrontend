@@ -169,13 +169,13 @@ export default function RoomsPage() {
 
               <span className="min-w-16">Status </span>
               <span className="min-w-20">Pracownik </span>
-              <span className="min-w-24">Sprzątane od</span>
+              <span className="min-w-24">Pracuje od</span>
 
               <span
                 onClick={() => toggleSort("lastCleaning")}
                 className="cursor-pointer min-w-24"
               >
-                Ostatnie sprzątanie{" "}
+                Ostatnia aktywność{" "}
                 {sortBy === "lastCleaning" && (sortOrder === "ASC" ? "↑" : "↓")}
               </span>
 
@@ -220,12 +220,10 @@ export default function RoomsPage() {
                   {/* STATUS */}
                   <div className="flex md:block justify-between">
                     <span className="md:hidden text-gray-500">Status:</span>
-                    {room.status === "W trakcie" ? (
+                    {room.isActive ? (
                       <Badge className="bg-red-600">{room.status}</Badge>
-                    ) : room.status === "Nigdy nie sprzątane" ? (
-                      <Badge variant="secondary">{room.status}</Badge>
                     ) : (
-                      <Badge className="bg-green-600">{room.status}</Badge>
+                      <Badge variant="secondary">{room.status}</Badge>
                     )}
                   </div>
 

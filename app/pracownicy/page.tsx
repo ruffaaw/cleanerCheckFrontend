@@ -212,10 +212,15 @@ export default function WorkersPage() {
                   {/* STATUS */}
                   <div className="flex md:block justify-between">
                     <span className="md:hidden text-gray-500">Status:</span>
-                    {worker.isCleaning ? (
-                      <Badge className="bg-red-600 text-white">Sprząta</Badge>
+                    {worker.isActive ? (
+                      <Badge className="bg-red-600 text-white">
+                        {worker.status}
+                      </Badge>
                     ) : (
-                      <Badge className="bg-green-600 text-white">Wolny</Badge>
+                      <Badge className="bg-green-600 text-white">
+                        {" "}
+                        {worker.status}
+                      </Badge>
                     )}
                   </div>
 
