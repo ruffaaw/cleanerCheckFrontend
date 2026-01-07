@@ -162,17 +162,19 @@ export default function WorkersPage() {
 
           <div className="border rounded-lg bg-white p-4 shadow-sm">
             {/* Nagłówki z sortowaniem */}
-            <div className="hidden md:grid grid-cols-4 font-medium text-sm pb-2 border-b select-none">
+            <div className="hidden md:grid grid-cols-6 font-medium text-sm pb-2 border-b select-none">
               <span
-                className="cursor-pointer"
+                className="cursor-pointer  min-w-24"
                 onClick={() => toggleSort("name")}
               >
                 Nazwa {sortBy === "name" && (sortOrder === "ASC" ? "↑" : "↓")}
               </span>
 
-              <span>Status</span>
-              <span>Pomieszczenie</span>
-              <span>Akcja</span>
+              <span className="min-w-16">Status</span>
+              <span className="min-w-20">Pomieszczenie</span>
+              <span className="min-w-24">Pracuje od</span>
+              <span className="min-w-24">Ostatnia aktywność</span>
+              <span className="min-w-16">Akcja</span>
             </div>
 
             {/* Ładowanie */}
@@ -181,7 +183,7 @@ export default function WorkersPage() {
                 {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
-                    className="grid md:grid-cols-4 grid-cols-1 py-3 border-b items-center opacity-50 gap-2 md:gap-0"
+                    className="grid md:grid-cols-6 grid-cols-1 py-3 border-b items-center opacity-50 gap-2 md:gap-0"
                   >
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-20" />
@@ -201,7 +203,7 @@ export default function WorkersPage() {
               workers?.map((worker) => (
                 <div
                   key={worker.id}
-                  className="grid md:grid-cols-4 grid-cols-1 py-3 border-b text-sm gap-2 md:gap-0"
+                  className="grid md:grid-cols-6 grid-cols-1 py-3 border-b text-sm gap-2 md:gap-0"
                 >
                   {/* NAZWA */}
                   <div className="flex md:block justify-between">
@@ -230,6 +232,22 @@ export default function WorkersPage() {
                       Pomieszczenie:
                     </span>
                     {worker.currentRoom || (
+                      <span className="text-gray-400 italic">—</span>
+                    )}
+                  </div>
+
+                  {/* PRACUJE OD */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">Pracuje od:</span>
+                    {worker.workingSince || (
+                      <span className="text-gray-400 italic">—</span>
+                    )}
+                  </div>
+
+                  {/* OSTATNIA AKTYWNOŚĆ */}
+                  <div className="flex md:block justify-between">
+                    <span className="md:hidden text-gray-500">Pracuje od:</span>
+                    {worker.lastActivityText || (
                       <span className="text-gray-400 italic">—</span>
                     )}
                   </div>
