@@ -326,7 +326,7 @@ export default function RoomsPage() {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="cursor-pointerw-full sm:w-auto"
+                    className="cursor-pointer w-full sm:w-auto"
                   >
                     Następna
                   </Button>
