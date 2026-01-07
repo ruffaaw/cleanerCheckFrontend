@@ -153,7 +153,7 @@ export default function WorkersPage() {
                 size="sm"
                 onClick={fetchWorkers}
                 disabled={loading}
-                className="w-full sm:w-auto"
+                className="cursor-pointer w-full sm:w-auto"
               >
                 Odśwież
               </Button>
@@ -256,7 +256,10 @@ export default function WorkersPage() {
                   <div className="flex md:block justify-between">
                     <span className="md:hidden text-gray-500">Akcja:</span>
                     <Link href={`/pracownicy/${worker.id}`}>
-                      <Button size="sm" className="w-full md:w-auto">
+                      <Button
+                        size="sm"
+                        className="cursor-pointer w-full md:w-auto"
+                      >
                         Szczegóły
                       </Button>
                     </Link>
@@ -283,7 +286,7 @@ export default function WorkersPage() {
                 <select
                   value={itemsPerPage}
                   onChange={(e) => handleItemsPerPage(Number(e.target.value))}
-                  className="border rounded-md px-2 py-1 text-sm"
+                  className="cursor-pointer border rounded-md px-2 py-1 text-sm"
                 >
                   {[5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
@@ -299,7 +302,7 @@ export default function WorkersPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="w-full sm:w-auto"
+                    className="cursor-pointer w-full sm:w-auto"
                   >
                     Poprzednia
                   </Button>
@@ -313,7 +316,7 @@ export default function WorkersPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => p + 1)}
                     disabled={currentPage === totalPages}
-                    className="w-full sm:w-auto"
+                    className="cursor-pointer w-full sm:w-auto"
                   >
                     Następna
                   </Button>

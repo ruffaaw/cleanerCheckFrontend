@@ -166,11 +166,12 @@ export default function RoomDetailsPage() {
                 size="sm"
                 onClick={() => fetchData()}
                 disabled={loading}
+                className="cursor-pointer"
               >
                 Odśwież
               </Button>
               <Link href="/pomieszczenia">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="cursor-pointer">
                   Powrót
                 </Button>
               </Link>
@@ -236,7 +237,7 @@ export default function RoomDetailsPage() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-40"
+                  className="w-40 cursor-pointer"
                 />
               </div>
 
@@ -246,7 +247,7 @@ export default function RoomDetailsPage() {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-40"
+                  className="w-40 cursor-pointer"
                 />
               </div>
             </div>
@@ -347,7 +348,7 @@ export default function RoomDetailsPage() {
                     setItemsPerPage(Number(e.target.value));
                     setCurrentPage(1);
                   }}
-                  className="border rounded-md px-2 py-1 text-sm"
+                  className="cursor-pointer border rounded-md px-2 py-1 text-sm"
                 >
                   {[5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
@@ -364,6 +365,7 @@ export default function RoomDetailsPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    className="cursor-pointer"
                   >
                     Poprzednia
                   </Button>
@@ -381,6 +383,7 @@ export default function RoomDetailsPage() {
                       )
                     }
                     disabled={currentPage === pagination.totalPages}
+                    className="cursor-pointer"
                   >
                     Następna
                   </Button>

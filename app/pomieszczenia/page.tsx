@@ -151,7 +151,7 @@ export default function RoomsPage() {
               size="sm"
               onClick={fetchRooms}
               disabled={loading}
-              className="w-full sm:w-auto"
+              className="cursor-pointer w-full sm:w-auto"
             >
               Odśwież
             </Button>
@@ -293,7 +293,7 @@ export default function RoomsPage() {
                 <select
                   value={itemsPerPage}
                   onChange={(e) => handleItemsPerPage(Number(e.target.value))}
-                  className="border rounded-md px-2 py-1 text-sm"
+                  className="cursor-pointer border rounded-md px-2 py-1 text-sm"
                 >
                   {[5, 10, 25, 50].map((n) => (
                     <option key={n} value={n}>
@@ -310,7 +310,7 @@ export default function RoomsPage() {
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="w-full sm:w-auto"
+                    className="cursor-pointer w-full sm:w-auto"
                   >
                     Poprzednia
                   </Button>
@@ -326,7 +326,7 @@ export default function RoomsPage() {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="w-full sm:w-auto"
+                    className="cursor-pointerw-full sm:w-auto"
                   >
                     Następna
                   </Button>
