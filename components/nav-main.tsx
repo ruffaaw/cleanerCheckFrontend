@@ -35,7 +35,7 @@ export function NavMain({
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton asChild tooltip={item.title}>
-                  <Link href={item.url}>
+                  <Link href={item.url} prefetch={false}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                   </Link>
