@@ -67,7 +67,7 @@ export default function RoomDetailsPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem(
         "itemsPerPagePomieszczeniaDetails",
-        String(itemsPerPage)
+        String(itemsPerPage),
       );
     }
   }, [itemsPerPage]);
@@ -94,7 +94,7 @@ export default function RoomDetailsPage() {
         }/dashboard/rooms/${id}?${params.toString()}`,
         {
           credentials: "include",
-        }
+        },
       );
 
       const json = await res.json();
@@ -188,6 +188,12 @@ export default function RoomDetailsPage() {
               </div>
             ) : (
               <div className="space-y-2 text-sm">
+                <p>
+                  <span className="font-medium">Strefa: </span>
+                  {data?.zone || (
+                    <span className="text-gray-400 italic">—</span>
+                  )}
+                </p>
                 <p>
                   <span className="font-medium">Status: </span>
                   {data?.isActive ? (
@@ -379,7 +385,7 @@ export default function RoomDetailsPage() {
                     size="sm"
                     onClick={() =>
                       setCurrentPage((p) =>
-                        Math.min(pagination.totalPages, p + 1)
+                        Math.min(pagination.totalPages, p + 1),
                       )
                     }
                     disabled={currentPage === pagination.totalPages}
