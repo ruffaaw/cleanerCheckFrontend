@@ -17,6 +17,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarProviderWithPersistence } from "@/components/SidebarProviderWithPersistence";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { X } from "lucide-react";
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -25,6 +33,7 @@ export default function RoomsPage() {
 
   // filtry
   const [search, setSearch] = useState("");
+  const [zone, setZone] = useState("");
 
   // sortowanie
   const [sortBy, setSortBy] = useState("name");
@@ -43,6 +52,12 @@ export default function RoomsPage() {
   // zmiana search
   function handleSearch(value: string) {
     setSearch(value);
+    setCurrentPage(1);
+  }
+
+  // zmiana zone
+  function handleZone(value: string) {
+    setZone(value === "all" ? "" : value);
     setCurrentPage(1);
   }
 
@@ -85,6 +100,7 @@ export default function RoomsPage() {
       params.append("limit", String(itemsPerPage));
 
       if (search.length >= 3) params.append("search", search.toLowerCase());
+      if (zone) params.append("zone", zone);
 
       params.append("sortBy", sortBy);
       params.append("sortOrder", sortOrder);
@@ -96,7 +112,7 @@ export default function RoomsPage() {
         {
           credentials: "include",
           cache: "no-store",
-        }
+        },
       );
 
       const data = await res.json();
@@ -115,7 +131,7 @@ export default function RoomsPage() {
     if (search.length === 0 || search.length >= 3) {
       fetchRooms();
     }
-  }, [currentPage, itemsPerPage, search, sortBy, sortOrder]);
+  }, [currentPage, itemsPerPage, search, zone, sortBy, sortOrder]);
 
   const totalPages = pagination?.totalPages;
 
@@ -139,12 +155,46 @@ export default function RoomsPage() {
         <div className="p-6">
           {/* TOP BAR */}
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-4 gap-3">
-            <Input
-              placeholder="Szukaj pomieszczenia..."
-              className="w-full sm:w-60"
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="relative w-full sm:w-60">
+                <Input
+                  placeholder="Szukaj pomieszczenia..."
+                  className="pr-8"
+                  value={search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+                {search && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSearch("")}
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 cursor-pointer"
+                  >
+                    <X size={14} />
+                  </Button>
+                )}
+              </div>
+
+              <Select value={zone || "all"} onValueChange={handleZone}>
+                <SelectTrigger className="w-full sm:w-52">
+                  <SelectValue placeholder="Wybierz strefę" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="all">Wszystkie strefy</SelectItem>
+                  <SelectItem value="Strefa ogólna antresola">
+                    Strefa ogólna antresola
+                  </SelectItem>
+                  <SelectItem value="Strefa ogólna poziom 0">
+                    Strefa ogólna poziom 0
+                  </SelectItem>
+                  <SelectItem value="Strefa Gate">Strefa Gate</SelectItem>
+                  <SelectItem value="Strefa przylotów">
+                    Strefa przylotów
+                  </SelectItem>
+                  <SelectItem value="Taras">Taras</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <Button
               variant="outline"
